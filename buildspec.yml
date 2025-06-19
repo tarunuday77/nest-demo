@@ -5,21 +5,23 @@ phases:
     runtime-versions:
       nodejs: 20
     commands:
-      - npm i --no-audit
+      - npm ci --legacy-peer-deps
       - echo Logging in to Amazon ECR...
 
   pre_build:
     commands:
       - ECR_BASE_URL=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
+      - IMAGE_URI=${ECR_BASE_URL}/${ECR_IMAGE_NAME}:${NEW_TAG}
       - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_BASE_URL}
-      # - REPOSITORY_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_IMAGE_NAME}:${NEW_TAG}"
+
   build:
     commands:
+      - echo Building Docker image...
       - docker build -t ${ECR_IMAGE_NAME}:${NEW_TAG} .
-      - docker tag ${ECR_IMAGE_NAME}:${NEW_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_IMAGE_NAME}:${NEW_TAG}
+      - docker tag ${ECR_IMAGE_NAME}:${NEW_TAG} ${IMAGE_URI}
+
   post_build:
     commands:
-      - docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_IMAGE_NAME}:${NEW_TAG}
-
-      # - docker push ${REPOSITORY_URI}
-      # - printf '{"ImageURI":"'"${REPOSITORY_URI}"'"}' > imageDetail.json
+      - echo Pushing Docker image to ECR...
+      - docker push ${IMAGE_URI}
+      - echo "Image pushed: ${IMAGE_URI}"
