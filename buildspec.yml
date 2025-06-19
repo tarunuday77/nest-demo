@@ -7,17 +7,19 @@ phases:
     commands:
       - npm i --no-audit
       - echo Logging in to Amazon ECR...
-      - ECR_BASE_URL=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
-      - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_BASE_URL}
+
   pre_build:
     commands:
-      - REPOSITORY_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_IMAGE_NAME}:${NEW_TAG}"
+      - ECR_BASE_URL=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
+      - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_BASE_URL}
+      # - REPOSITORY_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_IMAGE_NAME}:${NEW_TAG}"
   build:
     commands:
       - docker build -t ${ECR_IMAGE_NAME}:${NEW_TAG} .
       - docker tag ${ECR_IMAGE_NAME}:${NEW_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_IMAGE_NAME}:${NEW_TAG}
-      - docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_IMAGE_NAME}:${NEW_TAG}
   post_build:
     commands:
+      - docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_IMAGE_NAME}:${NEW_TAG}
+
       # - docker push ${REPOSITORY_URI}
       # - printf '{"ImageURI":"'"${REPOSITORY_URI}"'"}' > imageDetail.json
