@@ -14,4 +14,9 @@ export class AppController {
   getUserInfo(@Param('id') id: string) {
     return this.appService.getUserInfo(id);
   }
+
+  @Get('user/help')
+  helpToUser(){
+    return {isSuccess:true, message:"nhi krunga help!"}
+  }
 }
