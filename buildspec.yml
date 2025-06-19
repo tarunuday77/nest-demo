@@ -24,4 +24,3 @@ phases:
     commands:
       - echo Pushing Docker image to ECR...
       - docker push ${IMAGE_URI}
-      - echo "Image pushed: ${IMAGE_URI}"
