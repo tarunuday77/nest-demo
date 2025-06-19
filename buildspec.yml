@@ -14,8 +14,10 @@ phases:
       - REPOSITORY_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_IMAGE_NAME}:${NEW_TAG}"
   build:
     commands:
-      - docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_IMAGE_NAME}:${NEW_TAG} .
+      - docker build -t ${ECR_IMAGE_NAME}:${NEW_TAG} .
+      - docker tag ${ECR_IMAGE_NAME}:${NEW_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_IMAGE_NAME}:${NEW_TAG}
+      - docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_IMAGE_NAME}:${NEW_TAG}
   post_build:
     commands:
-      - docker push ${REPOSITORY_URI}
-      - printf '{"ImageURI":"'"${REPOSITORY_URI}"'"}' > imageDetail.json
+      # - docker push ${REPOSITORY_URI}
+      # - printf '{"ImageURI":"'"${REPOSITORY_URI}"'"}' > imageDetail.json
