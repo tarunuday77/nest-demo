@@ -5,16 +5,17 @@ phases:
     runtime-versions:
       nodejs: 20
     commands:
-      - echo Installing dependencies...
-      - npm ci --legacy-peer-deps
-
+      - npm i --no-audit
+      - echo Logging in to Amazon ECR...
+      - ECR_BASE_URL=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin ${ECR_BASE_URL}
+  pre_build:
+    commands:
+      - REPOSITORY_URI="${ECR_BASE_URL}/${ECR_IMAGE_NAME}:${NEW_TAG}"
   build:
     commands:
-      - echo Compiling NestJS application...
-      - npm run build
-
-artifacts:
-  files:
-    - '**/*'
-  base-directory: dist
-  discard-paths: no
+      - docker build -t ${REPOSITORY_URI} .
+  post_build:
+    commands:
+      - docker push ${REPOSITORY_URI}
+      - printf '{"ImageURI":"'"${REPOSITORY_URI}"'"}' > imageDetail.json
